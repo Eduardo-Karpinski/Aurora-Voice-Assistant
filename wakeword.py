@@ -1,7 +1,8 @@
 import re
 import unicodedata
+from config import WakeWordConfig
 
-WAKE_WORD = "aurora"
+WAKE_WORD = WakeWordConfig.WORD
 
 def _normalize(text: str) -> str:
     text = text.strip().lower()
@@ -12,11 +13,10 @@ def _normalize(text: str) -> str:
     text = re.sub(r"\s+", " ", text)
     return text
 
-
 def validate(text: str, wake_word: str = WAKE_WORD):
     if not text or not text.strip():
         print("[WAKEWORD] EMPTY TEXT — IGNORING")
-        return False
+        return False, None
 
     normalized = _normalize(text)
     pattern = rf"^\s*\b{re.escape(wake_word)}\b[,:;\-–—]?\s*(.*)$"
@@ -24,6 +24,8 @@ def validate(text: str, wake_word: str = WAKE_WORD):
 
     if not match:
         print(f"[WAKEWORD] REJECTED — '{text}'")
-        return False
+        return False, None
 
-    return True
+    command = match.group(1).strip()
+    print(f"[WAKEWORD] ACCEPTED — '{command}'")
+    return True, command

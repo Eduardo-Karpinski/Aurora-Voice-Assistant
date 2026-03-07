@@ -3,15 +3,15 @@ import collections
 import numpy as np
 import sounddevice as sd
 import webrtcvad
+from config import RecorderConfig
 
-SAMPLE_RATE = 16000
-FRAME_MS = 30
+SAMPLE_RATE = RecorderConfig.SAMPLE_RATE
+FRAME_MS = RecorderConfig.FRAME_MS
 FRAME_SIZE = int(SAMPLE_RATE * FRAME_MS / 1000)
-
-VAD_MODE = 3
-START_VOICE_FRAMES = 5
-SILENCE_FRAMES_TO_STOP = 25
-PRE_ROLL_FRAMES = 10
+VAD_MODE = RecorderConfig.VAD_MODE
+START_VOICE_FRAMES = RecorderConfig.START_VOICE_FRAMES
+SILENCE_FRAMES_TO_STOP = RecorderConfig.SILENCE_FRAMES_TO_STOP
+PRE_ROLL_FRAMES = RecorderConfig.PRE_ROLL_FRAMES
 
 def record_until_silence():
     vad = webrtcvad.Vad(VAD_MODE)

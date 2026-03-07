@@ -1,16 +1,16 @@
 from faster_whisper import WhisperModel
 import numpy as np
 from benchmark import benchmark
+from config import TranscriptionConfig
 
-MODEL_SIZE = "medium"
-DEVICE = "cpu"
-COMPUTE_TYPE = "int8"
-
-LANGUAGE = "pt"
-BEAM_SIZE = 1
-VAD_FILTER = False
-TEMPERATURE = 0
-CONDITION_ON_PREVIOUS_TEXT = False
+MODEL_SIZE = TranscriptionConfig.MODEL_SIZE
+DEVICE = TranscriptionConfig.DEVICE
+COMPUTE_TYPE = TranscriptionConfig.COMPUTE_TYPE
+LANGUAGE = TranscriptionConfig.LANGUAGE
+BEAM_SIZE = TranscriptionConfig.BEAM_SIZE
+VAD_FILTER = TranscriptionConfig.VAD_FILTER
+TEMPERATURE = TranscriptionConfig.TEMPERATURE
+CONDITION_ON_PREVIOUS_TEXT = TranscriptionConfig.CONDITION_ON_PREVIOUS_TEXT
 
 model = None
 
@@ -28,7 +28,7 @@ def transcribe(audio: np.ndarray):
     global model
     segments, info = model.transcribe(
         audio,
-        #beam_size=BEAM_SIZE,
+        beam_size=BEAM_SIZE,
         language=LANGUAGE,
         vad_filter=VAD_FILTER,
         temperature=TEMPERATURE,

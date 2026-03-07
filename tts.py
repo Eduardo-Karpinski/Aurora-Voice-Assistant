@@ -6,6 +6,7 @@ from benchmark import benchmark
 import threading
 import queue
 import re
+from config import TTSConfig
 
 tts = None
 
@@ -56,7 +57,7 @@ def _prepare_for_tts(text: str) -> str:
 @benchmark
 def init():
     global tts
-    model_name = "tts_models/multilingual/multi-dataset/xtts_v2"
+    model_name = TTSConfig.MODEL_NAME
     device = _select_device()
     tts = TTS(model_name).to(device)
 
@@ -65,13 +66,13 @@ def generate_audio(answer):
     global tts
     wav = tts.tts(
         text=answer,
-        speaker="Alma María",
-        language="pt"
+        speaker=TTSConfig.SPEAKER,
+        language=TTSConfig.LANGUAGE
     )
     return wav
 
 def play_audio(wav):  
-    sd.play(wav, samplerate=22000)
+    sd.play(wav, samplerate=TTSConfig.SAMPLE_RATE)
     sd.wait()
 
 def speak(answer):
@@ -79,7 +80,7 @@ def speak(answer):
         return
 
     answer = _prepare_for_tts(answer)
-    parts = _chunk_text(answer, limit=180)
+    parts = _chunk_text(answer, limit=TTSConfig.CHUNK_LIMIT)
 
     q = queue.Queue(maxsize=2)
 
