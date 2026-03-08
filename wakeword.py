@@ -15,7 +15,7 @@ def _normalize(text: str) -> str:
 
 def validate(text: str, wake_word: str = WAKE_WORD):
     if not text or not text.strip():
-        print("[WAKEWORD] EMPTY TEXT — IGNORING")
+        print("[VALIDATION] EMPTY TEXT — IGNORING")
         return False, None
 
     normalized = _normalize(text)
@@ -23,7 +23,7 @@ def validate(text: str, wake_word: str = WAKE_WORD):
     match = re.search(pattern, normalized)
 
     if not match:
-        print(f"[WAKEWORD] REJECTED — '{text}'")
+        print(f"[VALIDATION] REJECTED TEXT — '{text}'")
         return False, None
 
     command = match.group(1).strip()
