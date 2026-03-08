@@ -27,5 +27,4 @@ def validate(text: str, wake_word: str = WAKE_WORD):
         return False, None
 
     command = match.group(1).strip()
-    print(f"[WAKEWORD] ACCEPTED — '{command}'")
     return True, command

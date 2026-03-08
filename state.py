@@ -1,11 +1,13 @@
 from enum import Enum, auto
 
 class State(Enum):
-    IDLE = auto()          # aguardando wake word
-    LISTENING = auto()     # capturando áudio
-    TRANSCRIBING = auto()  # whisper
-    THINKING = auto()      # LLM
-    SPEAKING = auto()      # TTS
+    IDLE = auto()
+    LISTENING = auto()
+    RECORDING = auto()
+    STOPPING_RECORDING = auto()
+    TRANSCRIBING = auto()
+    THINKING = auto()
+    SPEAKING = auto()
     
 class StateManager:
     def __init__(self):

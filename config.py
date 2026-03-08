@@ -28,6 +28,7 @@ class RecorderConfig:
     START_VOICE_FRAMES = 5
     SILENCE_FRAMES_TO_STOP = 25
     PRE_ROLL_FRAMES = 10
+    DTYPE = "float32"
 
 class TTSConfig:
     MODEL_NAME = "tts_models/multilingual/multi-dataset/xtts_v2"
@@ -38,3 +39,6 @@ class TTSConfig:
 
 class WakeWordConfig:
     WORD = "aurora"
+    
+class DebugConfig:
+    BENCHMARK = False
