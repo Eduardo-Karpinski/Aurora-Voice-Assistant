@@ -20,6 +20,7 @@ class LLMConfig:
         "Escreva todos os números por extenso. "
         "Não use algarismos, abreviações, siglas, numerais romanos, markdown, listas, emojis ou símbolos especiais. "
         "Use apenas texto simples e contínuo."
+        "IMPORTANTE: Se o usuário pedir para você parar, calar a boca, chegar, ou qualquer comando de interrupção, responda apenas com a palavra [STOP] e absolutamente mais nada."
     )
 
 class TranscriptionConfig:

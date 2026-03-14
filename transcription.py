@@ -24,7 +24,7 @@ def init():
     )
 
 @benchmark
-def transcribe(audio: np.ndarray):
+def transcribe(audio):
     global model
     segments, info = model.transcribe(
         audio,

@@ -5,23 +5,27 @@ import tts
 import utils
 from state import State, StateManager
 import threading
+from benchmark import benchmark
+
+@benchmark
+def init_models():
+    t1 = threading.Thread(target=transcription.init, name="Transcription-Thread")
+    t2 = threading.Thread(target=tts.init, name="TTS-Thread")
+    t3 = threading.Thread(target=llm.init, name="LLM-Thread")
+
+    t1.start()
+    t2.start()
+    t3.start()
+
+    t1.join()
+    t2.join()
+    t3.join()
 
 if __name__ == "__main__":
     try:
         print('ASSISTANT STARTING')
         state = StateManager()
-    
-        t1 = threading.Thread(target=transcription.init, name="Transcription-Thread")
-        t2 = threading.Thread(target=tts.init, name="TTS-Thread")
-        t3 = threading.Thread(target=llm.init, name="LLM-Thread")
-
-        t1.start()
-        t2.start()
-        t3.start()
-
-        t1.join()
-        t2.join()
-        t3.join()
+        init_models()
         
         while True:
             state.set(State.LISTENING)
@@ -36,12 +40,17 @@ if __name__ == "__main__":
                 state.set(State.IDLE)
                 continue
             
+            tts.stop()
+            
             state.set(State.THINKING)
             answer = llm.ask(clean_text)
             
-            state.set(State.SPEAKING)
-            tts.speak(answer)
+            if "[STOP]" in answer.upper():
+                tts.stop()
+                state.set(State.IDLE)
+                continue
             
-            state.set(State.IDLE)
+            state.set(State.SPEAKING)
+            threading.Thread(target=tts.speak, args=(answer,), daemon=True).start()
     except KeyboardInterrupt:
         print('EXIT')

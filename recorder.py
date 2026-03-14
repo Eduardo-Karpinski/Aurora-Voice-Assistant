@@ -22,7 +22,7 @@ def record_until_silence(state):
     def callback(indata, frames, time_info, status):
         q.put(indata.copy())
 
-    def is_speech(frame_f32: np.ndarray) -> bool:
+    def is_speech(frame_f32):
         pcm16 = np.clip(frame_f32.squeeze() * 32768, -32768, 32767).astype(np.int16)
         return vad.is_speech(pcm16.tobytes(), SAMPLE_RATE)
 
