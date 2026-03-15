@@ -1,5 +1,5 @@
 class LLMConfig:
-    MODEL_PATH = "models/Gemma-3-Gaia-PT-BR-4b-it-BF16.gguf"
+    MODEL_PATH = "models/Llama-3.2-3B-Instruct-f16.gguf"
     N_GPU_LAYERS = -1
     N_BATCH = 1024
     N_CTX = 4096
@@ -53,4 +53,4 @@ class WakeWordConfig:
     WORD = "aurora"
     
 class DebugConfig:
-    BENCHMARK = False
+    BENCHMARK = True

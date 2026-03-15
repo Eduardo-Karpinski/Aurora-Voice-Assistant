@@ -30,20 +30,19 @@ def _chunk_text(text: str):
     return parts
 
 def _select_device():
+    if torch.cuda.is_available():
+        print("[DEVICE] USING CUDA")
+        return torch.device("cuda")
     try:
         import torch_directml
         print("[DEVICE] USING DIRECTML")
         return torch_directml.device()
-    except ImportError:
+    except ImportError as e:
+        print(f"[ERROR] Could not import torch_directml: {e}")
         pass
-
-    if torch.cuda.is_available():
-        print("[DEVICE] USING CUDA")
-        return torch.device("cuda")
 
     print("[DEVICE] USING CPU")
     return torch.device("cpu")
-
 
 def _prepare_for_tts(text):
     text = text.strip()

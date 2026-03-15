@@ -1,5 +1,4 @@
 from faster_whisper import WhisperModel
-import numpy as np
 from benchmark import benchmark
 from config import TranscriptionConfig
 
