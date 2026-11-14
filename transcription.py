@@ -16,6 +16,7 @@ model = None
 @benchmark
 def init():
     global model
+    print("[WHISPER] Carregando o modelo medium.", flush=True)
     model = WhisperModel(
         model_size_or_path=MODEL_SIZE,
         device=DEVICE,

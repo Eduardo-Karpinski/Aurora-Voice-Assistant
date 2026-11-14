@@ -10,6 +10,9 @@ class LLMConfig:
     TEMPERATURE = 0.1
     TOP_P = 0.9
     REPEAT_PENALTY = 1.1
+    MAX_TOKENS = 256
+    CONTEXT_MARGIN = 64
+    MESSAGE_OVERHEAD = 12
     SYSTEM_CONTENT = (
         "Você é Aurora, uma assistente virtual amigável, clara e objetiva. "
         "Responda sempre em português do Brasil. "
@@ -18,15 +21,16 @@ class LLMConfig:
         "Use linguagem simples, natural e conversacional. "
         "Prefira frases curtas e fluidas. "
         "Escreva todos os números por extenso. "
+        "Temperaturas abaixo de zero e qualquer quantidade negativa começam com a palavra menos, como menos cinco graus. "
         "Não use algarismos, abreviações, siglas, numerais romanos, markdown, listas, emojis ou símbolos especiais. "
-        "Use apenas texto simples e contínuo."
-        "IMPORTANTE: Se o usuário pedir para você parar, calar a boca, chegar, ou qualquer comando de interrupção, responda apenas com a palavra [STOP] e absolutamente mais nada."
+        "Use apenas texto simples e contínuo. "
+        "IMPORTANTE: Se o usuário pedir para você parar, calar a boca, chega, ou qualquer comando de interrupção, responda apenas com a palavra [STOP] e absolutamente mais nada."
     )
 
 class TranscriptionConfig:
     MODEL_SIZE = "medium"
-    DEVICE = "cpu"
-    COMPUTE_TYPE = "int8"
+    DEVICE = "cuda"
+    COMPUTE_TYPE = "float16"
     LANGUAGE = "pt"
     BEAM_SIZE = 1
     VAD_FILTER = False

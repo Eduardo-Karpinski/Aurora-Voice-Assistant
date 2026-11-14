@@ -4,6 +4,7 @@ from TTS.api import TTS
 from benchmark import benchmark
 import threading
 import queue
+import torch
 from config import TTSConfig
 
 tts = None
@@ -13,9 +14,17 @@ _lock = threading.Lock()
 @benchmark
 def init():
     global tts
+    print("[TTS] Baixando ou carregando o XTTS.", flush=True)
+    # MIOpen re-tunes the vocoder for every audio length. That search takes
+    # most of the synthesis time, so pick an algorithm directly.
+    torch.backends.miopen.immediate = True
     model_name = TTSConfig.MODEL_NAME
     device = utils._select_device()
     tts = TTS(model_name).to(device)
+    # SDPA on this ROCm stack raises hipErrorInvalidValue inside the XTTS GPT.
+    tts.synthesizer.tts_model.gpt.gpt.config._attn_implementation = "eager"
+    print("[TTS] Preparando a voz.", flush=True)
+    tts.tts(text="Olá.", speaker=TTSConfig.SPEAKER, language=TTSConfig.LANGUAGE)
 
 @benchmark
 def generate_audio(answer):

@@ -1,7 +1,6 @@
 import re
 import unicodedata
 import torch
-torch.inference_mode = torch.no_grad
 from config import WakeWordConfig
 from config import TTSConfig
 
@@ -31,15 +30,9 @@ def _chunk_text(text: str):
 
 def _select_device():
     if torch.cuda.is_available():
-        print("[DEVICE] USING CUDA")
+        name = torch.cuda.get_device_name(0)
+        print(f"[DEVICE] USING {name}")
         return torch.device("cuda")
-    try:
-        import torch_directml
-        print("[DEVICE] USING DIRECTML")
-        return torch_directml.device()
-    except ImportError as e:
-        print(f"[ERROR] Could not import torch_directml: {e}")
-        pass
 
     print("[DEVICE] USING CPU")
     return torch.device("cpu")
