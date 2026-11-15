@@ -1,5 +1,5 @@
 class LLMConfig:
-    MODEL_PATH = "models/Llama-3.2-3B-Instruct-f16.gguf"
+    MODEL_PATH = "models/Qwen3-8B-Q5_K_M.gguf"
     N_GPU_LAYERS = -1
     N_BATCH = 1024
     N_CTX = 4096
@@ -7,9 +7,12 @@ class LLMConfig:
     USE_MMAP = True
     USE_MLOCK = False
     VERBOSE = False
-    TEMPERATURE = 0.1
-    TOP_P = 0.9
+    TEMPERATURE = 0.7
+    TOP_P = 0.8
+    TOP_K = 20
+    MIN_P = 0.0
     REPEAT_PENALTY = 1.1
+    PRESENCE_PENALTY = 1.0
     MAX_TOKENS = 256
     CONTEXT_MARGIN = 64
     MESSAGE_OVERHEAD = 12
@@ -24,6 +27,8 @@ class LLMConfig:
         "Temperaturas abaixo de zero e qualquer quantidade negativa começam com a palavra menos, como menos cinco graus. "
         "Não use algarismos, abreviações, siglas, numerais romanos, markdown, listas, emojis ou símbolos especiais. "
         "Use apenas texto simples e contínuo. "
+        "Quando a pergunta depender de um fato atual, notícia, clima, preço ou de algo que você não tenha certeza, chame a ferramenta de pesquisa antes de responder. "
+        "A fala final continua só com texto falado. "
         "IMPORTANTE: Se o usuário pedir para você parar, calar a boca, chega, ou qualquer comando de interrupção, responda apenas com a palavra [STOP] e absolutamente mais nada."
     )
 
@@ -54,7 +59,7 @@ class TTSConfig:
     CHUNK_LIMIT = 180
 
 class WakeWordConfig:
-    WORD = "aurora"
+    WORD = None
     
 class DebugConfig:
     BENCHMARK = True

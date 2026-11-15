@@ -4,12 +4,14 @@ Assistente de voz local para Windows. O microfone é transcrito na própria máq
 
 A conversa fica só na memória do processo. Ao encerrar o programa, o histórico some.
 
+Quando a resposta precisa de um fato atual, só o texto da consulta sai para a busca, e a primeira página encontrada é lida. O áudio, a transcrição e o modelo continuam na máquina.
+
 ## Pipeline
 
 1. O microfone captura áudio a 16 kHz.
 2. O WebRTC VAD detecta o fim da fala.
 3. O faster-whisper transcreve em português na GPU.
-4. O Llama 3.2, via llama.cpp com Vulkan, escreve a resposta.
+4. O Qwen3 8B, via llama.cpp com Vulkan, escreve a resposta.
 5. O XTTS v2 sintetiza a fala na GPU e o sounddevice reproduz.
 
 Whisper e XTTS usam o PyTorch ROCm, que nesta plataforma se apresenta como CUDA. O modelo de linguagem permanece no Vulkan.
@@ -18,7 +20,7 @@ Whisper e XTTS usam o PyTorch ROCm, que nesta plataforma se apresenta como CUDA.
 
 - Windows com uma AMD RX 7900 GRE (gfx1100).
 - Python 3.11. Os wheels de ROCm para Windows existem do 3.10 ao 3.14. O Python 3.15 não instala o PyTorch ROCm.
-- O arquivo `models/Llama-3.2-3B-Instruct-f16.gguf`.
+- O arquivo `models/Qwen3-8B-Q5_K_M.gguf`.
 
 Se o `python` do sistema for outra versão:
 
@@ -48,7 +50,7 @@ python -m pip install --index-url https://repo.amd.com/rocm/whl-multi-arch/ "tor
 Instale o áudio, a transcrição, a síntese e o `transformers` compatível com o XTTS:
 
 ```powershell
-pip install sounddevice webrtcvad-wheels faster-whisper coqui-tts six "torchcodec==0.12.0" "transformers==4.57.6"
+pip install sounddevice webrtcvad-wheels faster-whisper coqui-tts six ddgs "torchcodec==0.12.0" "transformers==4.57.6"
 ```
 
 O pacote `webrtcvad` não publica wheel para Python 3.11 no Windows. Use `webrtcvad-wheels`. O XTTS desta versão usa o GPT-2 do `transformers` 4.57. A série 5 altera a geração e a fala falha.
@@ -69,7 +71,7 @@ pip install --only-binary=llama-cpp-python llama-cpp-python --extra-index-url ht
 
 ## Modelo de linguagem
 
-Coloque o GGUF em `models/Llama-3.2-3B-Instruct-f16.gguf`. Esse caminho está em `LLMConfig.MODEL_PATH`. Se o arquivo não existir, o programa avisa e não inicia.
+Coloque o GGUF em `models/Qwen3-8B-Q5_K_M.gguf`. Esse caminho está em `LLMConfig.MODEL_PATH`. Se o arquivo não existir, o programa avisa e não inicia. O arquivo oficial é o `Q5_K_M` do repositório [Qwen/Qwen3-8B-GGUF](https://huggingface.co/Qwen/Qwen3-8B-GGUF).
 
 Na primeira execução o XTTS baixa o modelo de voz. O programa aceita a licença não comercial CPML para permitir esse download: https://tts-hub.github.io/cpml
 
