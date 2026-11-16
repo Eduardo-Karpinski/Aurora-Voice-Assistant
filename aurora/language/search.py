@@ -1,6 +1,6 @@
 import re
 
-from config import SearchConfig
+from aurora.config import SearchConfig
 
 # ddgs 9.16.1 picks a random browser profile on every request. A mobile profile
 # returns HTML the engines cannot read, so the constructor below forces desktop

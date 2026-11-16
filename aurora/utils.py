@@ -1,7 +1,7 @@
 import re
 import unicodedata
 
-from config import TTSConfig, WakeWordConfig
+from aurora.config import TTSConfig, WakeWordConfig
 
 CHUNK_LIMIT = TTSConfig.CHUNK_LIMIT
 

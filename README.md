@@ -61,7 +61,7 @@ The script creates a Python 3.11 virtual environment and then:
 4. Installs the prebuilt Vulkan wheel of `llama-cpp-python` 0.3.36. Without `--only-binary`, pip tries to compile it and asks for Visual C++.
 5. Installs pytest.
 
-`transformers` stays on 4.57.6 because this XTTS build uses that GPT-2 path. The 5.x generation API breaks speech. `webrtcvad` has no Windows wheel for Python 3.11, so the file uses `webrtcvad-wheels`. `ddgs` is pinned at 9.16.1 because `search.py` replaces a private constructor in that version: the library otherwise draws a mobile browser profile and the engines return HTML it cannot read.
+`transformers` stays on 4.57.6 because this XTTS build uses that GPT-2 path. The 5.x generation API breaks speech. `webrtcvad` has no Windows wheel for Python 3.11, so the file uses `webrtcvad-wheels`. `ddgs` is pinned at 9.16.1 because `aurora/language/search.py` replaces a private constructor in that version: the library otherwise draws a mobile browser profile and the engines return HTML it cannot read.
 
 ## Language model
 
@@ -75,10 +75,10 @@ With the environment active:
 
 ```powershell
 .\venv\Scripts\Activate.ps1
-python main.py
+python -m aurora
 ```
 
-You can skip activation and call `.\venv\Scripts\python.exe main.py`.
+`python main.py` starts the same program. You can skip activation and call `.\venv\Scripts\python.exe -m aurora`.
 
 Speak after the state changes to `LISTENING`. Start with the wake word, then the question: "Aurora, what time is it?" A phrase without it is ignored. Ctrl+C exits. A failed turn is printed and the assistant goes back to listening.
 
@@ -86,7 +86,7 @@ Set `AURORA_BENCHMARK=1` to print how long init, transcription, the reply, and s
 
 ## Configuration
 
-`config.py` holds the knobs: the language model and its context, the Whisper size, the XTTS voice, the wake word, the VAD limits, and the search region. `WakeWordConfig.WORD` is `aurora`. Set it to an empty string to listen to every phrase. Whisper detects the language of each question, and the reply is spoken in that language. Alma María is the voice. Portuguese is the fallback when the language is unclear. The search region is `br-pt`.
+The program is the `aurora` package: `audio` records, transcribes, and speaks; `language` runs the model, the memory, and the web search. `aurora/config.py` holds the knobs: the language model and its context, the Whisper size, the XTTS voice, the wake word, the VAD limits, and the search region. `WakeWordConfig.WORD` is `aurora`. Set it to an empty string to listen to every phrase. Whisper detects the language of each question, and the reply is spoken in that language. Alma María is the voice. Portuguese is the fallback when the language is unclear. The search region is `br-pt`.
 
 ## Tests
 

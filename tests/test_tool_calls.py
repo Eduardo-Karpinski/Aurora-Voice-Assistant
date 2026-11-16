@@ -1,4 +1,4 @@
-from tool_calls import call_from, parse_tool_call, spoken_answer
+from aurora.language.tool_calls import call_from, parse_tool_call, spoken_answer
 
 
 def test_parse_tool_call_reads_a_json_payload():

@@ -1,5 +1,5 @@
-from config import SearchConfig
-from search import search
+from aurora.config import SearchConfig
+from aurora.language.search import search
 
 
 class FakeSearch:

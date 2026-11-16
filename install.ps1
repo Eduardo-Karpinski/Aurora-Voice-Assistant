@@ -65,4 +65,4 @@ Write-Host "Installing test tools"
 & $Python -m pip install -r (Join-Path $Root "requirements-dev.txt")
 Assert-ExitCode "Installing test tools"
 
-Write-Host "Done. Activate the environment with .\venv\Scripts\Activate.ps1 and start the assistant with python main.py"
+Write-Host "Done. Activate the environment with .\venv\Scripts\Activate.ps1 and start the assistant with python -m aurora"

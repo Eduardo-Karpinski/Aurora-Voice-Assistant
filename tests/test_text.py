@@ -1,7 +1,7 @@
 import queue
 
-from config import TTSConfig
-from utils import _chunk_text, _prepare_for_tts, _produce_audio, speech_language, validate_transcript
+from aurora.config import TTSConfig
+from aurora.utils import _chunk_text, _prepare_for_tts, _produce_audio, speech_language, validate_transcript
 
 
 def test_speech_language_follows_the_reply():

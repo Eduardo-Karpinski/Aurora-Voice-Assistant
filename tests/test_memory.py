@@ -1,4 +1,4 @@
-from memory import ConversationMemory, estimate_tokens, trim_messages
+from aurora.language.memory import ConversationMemory, estimate_tokens, trim_messages
 
 
 def _count_by_length(messages):

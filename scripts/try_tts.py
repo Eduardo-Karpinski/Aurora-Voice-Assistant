@@ -11,8 +11,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import soundfile as sf
 
-import tts
-from config import TTSConfig
+import aurora.audio.tts as tts
+from aurora.config import TTSConfig
 
 # Sample spoken text. The voice follows the language of the text.
 # python scripts/try_tts.py Olá, isto é um teste de voz.
