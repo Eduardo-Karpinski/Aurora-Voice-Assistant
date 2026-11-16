@@ -1,0 +1,17 @@
+# PyPI packages. Install with install.ps1, not this file alone.
+# Torch for gfx1100, the ROCm build of CTranslate2, and the Vulkan wheel of
+# llama-cpp-python come from other indexes. The script installs those.
+#
+# transformers is pinned because this XTTS build uses the GPT-2 path in 4.57.
+# The 5.x generation API breaks speech.
+sounddevice==0.5.6
+soundfile==0.14.0
+webrtcvad-wheels==2.0.14.post1
+faster-whisper==1.2.1
+coqui-tts==0.28.0
+six==1.17.0
+ddgs==9.16.1
+primp==2.0.1
+torchcodec==0.12.0
+transformers==4.57.6
+numpy==2.4.4

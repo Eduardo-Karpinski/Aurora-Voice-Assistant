@@ -1,98 +1,117 @@
 # Aurora
 
-Assistente de voz local para Windows. O microfone é transcrito na própria máquina, um modelo GGUF gera a resposta e o XTTS a fala. Nenhuma etapa chama uma API externa.
+[![tests](https://github.com/Eduardo-Karpinski/Aurora-Voice-Assistant/actions/workflows/tests.yml/badge.svg)](https://github.com/Eduardo-Karpinski/Aurora-Voice-Assistant/actions/workflows/tests.yml)
 
-A conversa fica só na memória do processo. Ao encerrar o programa, o histórico some.
+Local voice assistant for Windows. The microphone is transcribed on the machine, a GGUF model writes the reply, and XTTS speaks it. The assistant answers in the language of the question.
 
-Quando a resposta precisa de um fato atual, só o texto da consulta sai para a busca, e a primeira página encontrada é lida. O áudio, a transcrição e o modelo continuam na máquina.
+The conversation lives only in the process. When the program exits, the history is gone.
+
+When a reply needs a current fact, only the search query leaves the machine, and the first page found is read. The audio, the transcript, and the language model stay local.
+
+The microphone stays closed while a reply is playing, so the assistant does not record its own voice.
 
 ## Pipeline
 
-1. O microfone captura áudio a 16 kHz.
-2. O WebRTC VAD detecta o fim da fala.
-3. O faster-whisper transcreve em português na GPU.
-4. O Qwen3 8B, via llama.cpp com Vulkan, escreve a resposta.
-5. O XTTS v2 sintetiza a fala na GPU e o sounddevice reproduz.
+1. The microphone captures audio at 16 kHz.
+2. WebRTC VAD detects the end of speech.
+3. faster-whisper detects the spoken language and transcribes it on the GPU.
+4. Qwen3 8B, through llama.cpp with Vulkan, writes the reply.
+5. XTTS v2 synthesizes speech on the GPU and sounddevice plays it.
 
-Whisper e XTTS usam o PyTorch ROCm, que nesta plataforma se apresenta como CUDA. O modelo de linguagem permanece no Vulkan.
+Whisper and XTTS use PyTorch ROCm, which shows up as CUDA on this platform. The language model stays on Vulkan.
 
-## Requisitos
+## Requirements
 
-- Windows com uma AMD RX 7900 GRE (gfx1100).
-- Python 3.11. Os wheels de ROCm para Windows existem do 3.10 ao 3.14. O Python 3.15 não instala o PyTorch ROCm.
-- O arquivo `models/Qwen3-8B-Q5_K_M.gguf`.
+This setup is tested on one machine:
 
-Se o `python` do sistema for outra versão:
+| Piece | Tested setup |
+| --- | --- |
+| System | Windows |
+| GPU | AMD RX 7900 GRE (gfx1100) |
+| Python | 3.11 |
+
+ROCm wheels for Windows exist for Python 3.10 through 3.14. Python 3.15 does not install PyTorch ROCm. This project pins 3.11.
+
+NVIDIA, Intel, CPU-only, macOS, and Linux are outside this setup. Whisper is configured for CUDA, and the installer replaces CTranslate2 with the ROCm build.
+
+You also need the file `models/Qwen3-8B-Q5_K_M.gguf`.
+
+If `python` on the system is another version:
 
 ```powershell
 winget install -e --id Python.Python.3.11
 ```
 
-## Instalação
+## Installation
 
-Na pasta do projeto, crie o ambiente com o Python 3.11:
+From the project folder:
 
 ```powershell
-py -3.11 -m venv venv
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+.\install.ps1
+```
+
+`Set-ExecutionPolicy` applies only to the current window. Without it, PowerShell refuses to run `install.ps1` and `Activate.ps1`.
+
+The script creates a Python 3.11 virtual environment and then:
+
+1. Installs PyTorch ROCm for gfx1100.
+2. Installs the pinned packages in `requirements.txt`.
+3. Replaces the NVIDIA CTranslate2 wheel that `faster-whisper` pulls with the ROCm wheel from [CTranslate2 4.9.0](https://github.com/OpenNMT/CTranslate2/releases/tag/v4.9.0).
+4. Installs the prebuilt Vulkan wheel of `llama-cpp-python` 0.3.36. Without `--only-binary`, pip tries to compile it and asks for Visual C++.
+5. Installs pytest.
+
+`transformers` stays on 4.57.6 because this XTTS build uses that GPT-2 path. The 5.x generation API breaks speech. `webrtcvad` has no Windows wheel for Python 3.11, so the file uses `webrtcvad-wheels`. `ddgs` is pinned at 9.16.1 because `search.py` replaces a private constructor in that version: the library otherwise draws a mobile browser profile and the engines return HTML it cannot read.
+
+## Language model
+
+Put the GGUF at `models/Qwen3-8B-Q5_K_M.gguf`. That path is `LLMConfig.MODEL_PATH`. If the file is missing, the program says so and does not start. The published file is `Q5_K_M` from [Qwen/Qwen3-8B-GGUF](https://huggingface.co/Qwen/Qwen3-8B-GGUF).
+
+The first run downloads the XTTS voice. The program sets `COQUI_TOS_AGREED` so that download can proceed. The weights are under the non-commercial CPML: https://tts-hub.github.io/cpml. See `NOTICE`.
+
+## Running
+
+With the environment active:
+
+```powershell
 .\venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip wheel
-```
-
-O `Set-ExecutionPolicy` vale apenas para a janela atual. Sem ele, o PowerShell bloqueia o `Activate.ps1`. Também é possível pular a ativação e chamar `.\venv\Scripts\python.exe` diretamente.
-
-Instale o PyTorch ROCm para a gfx1100:
-
-```powershell
-python -m pip install --index-url https://repo.amd.com/rocm/whl-multi-arch/ "torch[device-gfx1100]==2.12.0+rocm7.14.1" "torchvision[device-gfx1100]==0.27.0+rocm7.14.1" "torchaudio==2.11.0+rocm7.14.1"
-```
-
-Instale o áudio, a transcrição, a síntese e o `transformers` compatível com o XTTS:
-
-```powershell
-pip install sounddevice webrtcvad-wheels faster-whisper coqui-tts six ddgs "torchcodec==0.12.0" "transformers==4.57.6"
-```
-
-O pacote `webrtcvad` não publica wheel para Python 3.11 no Windows. Use `webrtcvad-wheels`. O XTTS desta versão usa o GPT-2 do `transformers` 4.57. A série 5 altera a geração e a fala falha.
-
-O `faster-whisper` instala o CTranslate2 do PyPI, compilado para GPU NVIDIA. Substitua pelo wheel ROCm da [release 4.9.0](https://github.com/OpenNMT/CTranslate2/releases/tag/v4.9.0):
-
-```powershell
-Invoke-WebRequest -Uri https://github.com/OpenNMT/CTranslate2/releases/download/v4.9.0/rocm-python-wheels-Windows.zip -OutFile rocm-python-wheels-Windows.zip
-Expand-Archive -Path rocm-python-wheels-Windows.zip -DestinationPath ctranslate2-rocm -Force
-pip install --force-reinstall --no-deps (Get-ChildItem -Recurse .\ctranslate2-rocm -Filter "ctranslate2-*-cp311-cp311-win_amd64.whl").FullName
-```
-
-Instale o llama.cpp pelo wheel Vulkan já compilado. Sem o `--only-binary`, o pip tenta compilar o pacote e exige o Visual C++:
-
-```powershell
-pip install --only-binary=llama-cpp-python llama-cpp-python --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/vulkan
-```
-
-## Modelo de linguagem
-
-Coloque o GGUF em `models/Qwen3-8B-Q5_K_M.gguf`. Esse caminho está em `LLMConfig.MODEL_PATH`. Se o arquivo não existir, o programa avisa e não inicia. O arquivo oficial é o `Q5_K_M` do repositório [Qwen/Qwen3-8B-GGUF](https://huggingface.co/Qwen/Qwen3-8B-GGUF).
-
-Na primeira execução o XTTS baixa o modelo de voz. O programa aceita a licença não comercial CPML para permitir esse download: https://tts-hub.github.io/cpml
-
-## Execução
-
-Com o ambiente ativo:
-
-```powershell
 python main.py
 ```
 
-Fale depois que o estado mudar para `LISTENING`. Ctrl+C encerra.
+You can skip activation and call `.\venv\Scripts\python.exe main.py`.
 
-## Configuração
+Speak after the state changes to `LISTENING`. Start with the wake word, then the question: "Aurora, what time is it?" A phrase without it is ignored. Ctrl+C exits. A failed turn is printed and the assistant goes back to listening.
 
-`config.py` concentra os ajustes: modelo e contexto do LLM, tamanho do Whisper, voz e idioma do XTTS, e os limites do VAD. A voz padrão é Alma María, em português.
+Set `AURORA_BENCHMARK=1` to print how long init, transcription, the reply, and speech take. Timing is off unless that variable is set.
 
-## Solução de problemas
+## Configuration
 
-O Windows Smart App Control bloqueia a DLL não assinada `aotriton_v2.dll` com o erro 4551. A carga do PyTorch ROCm só segue depois que o Smart App Control é desligado em Segurança do Windows.
+`config.py` holds the knobs: the language model and its context, the Whisper size, the XTTS voice, the wake word, the VAD limits, and the search region. `WakeWordConfig.WORD` is `aurora`. Set it to an empty string to listen to every phrase. Whisper detects the language of each question, and the reply is spoken in that language. Alma María is the voice. Portuguese is the fallback when the language is unclear. The search region is `br-pt`.
 
-Se o Whisper disser que a versão do driver CUDA é insuficiente, o CTranslate2 instalado ainda é o wheel NVIDIA. Repita a instalação do wheel ROCm acima.
+## Tests
 
-Se o llama.cpp pedir `nmake` ou o compilador C++, a instalação partiu para compilação local. Repita o comando com `--only-binary=llama-cpp-python`.
+Unit tests cover memory, transcript cleanup, speech chunking, the spoken language, tool-call parsing, and search formatting. They do not load the GPU.
+
+```powershell
+.\venv\Scripts\python.exe -m pytest
+```
+
+Scripts that hit the network, the language model, or the speaker live in `scripts/`:
+
+```powershell
+.\venv\Scripts\python.exe scripts\try_search.py current dollar to real exchange rate
+.\venv\Scripts\python.exe scripts\try_llm.py What is the temperature on the surface of the Moon?
+.\venv\Scripts\python.exe scripts\try_tts.py
+```
+
+## License
+
+The code is MIT. See `LICENSE`. XTTS v2 weights are not, and they are not included in this repository. See `NOTICE` before you use the voice model for anything other than a personal project.
+
+## Troubleshooting
+
+Windows Smart App Control blocks the unsigned `aotriton_v2.dll` with error 4551. PyTorch ROCm loads only after Smart App Control is turned off in Windows Security.
+
+If Whisper says the CUDA driver version is insufficient, the installed CTranslate2 is still the NVIDIA wheel. Run `install.ps1` again, or repeat the ROCm wheel step from that script.
+
+If llama.cpp asks for `nmake` or a C++ compiler, pip tried to build it locally. Repeat the install with `--only-binary=llama-cpp-python` and the Vulkan index, as `install.ps1` does.

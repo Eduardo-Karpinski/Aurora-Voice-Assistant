@@ -1,46 +1,46 @@
 import re
 
-import primp
-from ddgs import DDGS
-from ddgs.exceptions import DDGSException, TimeoutException
-from ddgs.http_client import HttpClient
+from config import SearchConfig
 
-MAX_RESULTS = 5
-SNIPPET_LIMIT = 240
-PAGE_LIMIT = 800
+# ddgs 9.16.1 picks a random browser profile on every request. A mobile profile
+# returns HTML the engines cannot read, so the constructor below forces desktop
+# Chrome on Windows. HttpClient.__init__ is private; keep the ddgs pin in
+# requirements.txt in step with this patch.
+_DESKTOP_CHROME_READY = False
 
-def pesquisar(consulta):
-    consulta = (consulta or "").strip()
-    if not consulta:
-        return "A pesquisa veio sem texto."
 
-    _navegador()
-    try:
-        ddgs = DDGS(timeout=12)
-        results = ddgs.text(consulta, region="br-pt", max_results=MAX_RESULTS) or []
-    except TimeoutException:
-        return "A pesquisa na internet falhou."
-    except DDGSException:
-        results = []
+def search(query, client=None):
+    query = (query or "").strip()
+    if not query:
+        return "The search query was empty."
+
+    if client is None:
+        client = _client()
+
+    results = _results(client, query)
+    if results is None:
+        return "The web search failed."
     if not results:
-        return "A pesquisa não encontrou resultado."
+        return "The search returned no results."
 
-    lines = []
-    page = _pagina(ddgs, results)
-    if page:
-        lines.append(page)
-    for item in results:
-        title = str(item.get("title") or "").strip()
-        body = " ".join(str(item.get("body") or "").split())
-        if len(body) > SNIPPET_LIMIT:
-            body = body[:SNIPPET_LIMIT].rstrip() + "..."
-        if title or body:
-            lines.append(f"{title}. {body}".strip())
-    return "\n".join(lines) if lines else "A pesquisa não encontrou resultado."
+    return _format(results, _page(client, results))
 
-def _navegador():
-    # O cliente da biblioteca sorteia um navegador a cada pedido. O perfil de
-    # celular devolve um HTML que os motores não conseguem ler.
+
+def _client():
+    _use_desktop_chrome()
+    from ddgs import DDGS
+
+    return DDGS(timeout=SearchConfig.TIMEOUT)
+
+
+def _use_desktop_chrome():
+    global _DESKTOP_CHROME_READY
+    if _DESKTOP_CHROME_READY:
+        return
+
+    import primp
+    from ddgs.http_client import HttpClient
+
     def __init__(self, proxy=None, timeout=10, *, verify=True):
         self.client = primp.Client(
             proxy=proxy,
@@ -51,24 +51,70 @@ def _navegador():
         )
 
     HttpClient.__init__ = __init__
+    _DESKTOP_CHROME_READY = True
 
-def _pagina(ddgs, results):
+
+def _results(client, query):
+    try:
+        return client.text(
+            query,
+            region=SearchConfig.REGION,
+            max_results=SearchConfig.MAX_RESULTS,
+        ) or []
+    except Exception as exc:
+        if type(exc).__name__ == "TimeoutException":
+            return None
+        if type(exc).__name__ == "DDGSException":
+            return []
+        raise
+
+
+def _page(client, results):
     for item in results[:2]:
         href = item.get("href")
         if not href:
             continue
         try:
-            page = ddgs.extract(href, fmt="text_markdown")
+            page = client.extract(href, fmt="text_markdown")
         except Exception:
             continue
-        text = str(page.get("content") or "")
-        heading = re.search(r"(?m)^#+ ", text)
-        if heading:
-            text = text[heading.start():]
-        text = " ".join(text.split())
-        if len(text) < 80:
-            continue
-        if len(text) > PAGE_LIMIT:
-            text = text[:PAGE_LIMIT].rstrip() + "..."
-        return text
+        text = _page_text(str(page.get("content") or ""))
+        if text:
+            return text
     return ""
+
+
+def _page_text(text):
+    heading = re.search(r"(?m)^#+ ", text)
+    if heading:
+        text = text[heading.start():]
+    text = " ".join(text.split())
+    if len(text) < 80:
+        return ""
+    limit = SearchConfig.PAGE_LIMIT
+    if len(text) > limit:
+        text = text[:limit].rstrip() + "..."
+    return text
+
+
+def _snippet(title, body):
+    title = str(title or "").strip()
+    body = " ".join(str(body or "").split())
+    limit = SearchConfig.SNIPPET_LIMIT
+    if len(body) > limit:
+        body = body[:limit].rstrip() + "..."
+    parts = [part for part in (title, body) if part]
+    return ". ".join(parts)
+
+
+def _format(results, page):
+    lines = []
+    if page:
+        lines.append(page)
+    for item in results:
+        line = _snippet(item.get("title"), item.get("body"))
+        if line:
+            lines.append(line)
+    if not lines:
+        return "The search returned no results."
+    return "\n".join(lines)

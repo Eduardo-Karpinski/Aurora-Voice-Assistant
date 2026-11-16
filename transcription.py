@@ -16,7 +16,7 @@ model = None
 @benchmark
 def init():
     global model
-    print("[WHISPER] Carregando o modelo medium.", flush=True)
+    print(f"[WHISPER] Loading the {MODEL_SIZE} model.", flush=True)
     model = WhisperModel(
         model_size_or_path=MODEL_SIZE,
         device=DEVICE,
@@ -36,4 +36,5 @@ def transcribe(audio):
     )
 
     text = " ".join(seg.text.strip() for seg in segments).strip()
+    print(f"[WHISPER] Detected {info.language}.", flush=True)
     return text

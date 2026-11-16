@@ -1,0 +1,11 @@
+[project]
+name = "aurora-voice-assistant"
+version = "0.1.0"
+description = "Local Windows voice assistant. Speech stays on the machine; web search runs only for current facts."
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+license = "MIT"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

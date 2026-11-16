@@ -206,8 +206,12 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
-#Models
+# Models
 /models
 
-# Audio gerado pelos testes
+# Audio written by the manual TTS script
 /tests/out/
+
+# Downloaded by install.ps1 if a run is interrupted
+/rocm-python-wheels-Windows.zip
+/ctranslate2-rocm/

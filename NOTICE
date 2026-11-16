@@ -1,0 +1,18 @@
+Aurora's own code is under the MIT license. See LICENSE.
+
+Running the assistant downloads and uses other models and libraries under their
+own terms. Two of them matter before you use this in anything other than a
+personal project:
+
+- XTTS v2 (Coqui) is downloaded on first launch. Its weights are under the
+  Coqui Public Model License (CPML), which is non-commercial:
+  https://tts-hub.github.io/cpml
+  main.py sets COQUI_TOS_AGREED so that download can proceed. That accepts the
+  CPML for the voice model. It does not relicense the weights.
+
+- The language-model file models/Qwen3-8B-Q5_K_M.gguf is not in this
+  repository. The Qwen3-8B-GGUF weights published by Qwen are under Apache-2.0:
+  https://huggingface.co/Qwen/Qwen3-8B-GGUF
+
+faster-whisper, CTranslate2, llama.cpp, and the other Python packages keep
+their own licenses.
